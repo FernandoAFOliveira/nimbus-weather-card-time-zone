@@ -1,4 +1,4 @@
-// Nimbus Weather Card v2.3.0
+// Nimbus Weather Card v2.3.1
 // https://github.com/maxfok/nimbus-weather-card
 // (c) 2024 Gerasimos Fokaefs — MIT License
 
@@ -300,6 +300,10 @@ class NimbusWeatherCard extends HTMLElement {
     return { entity };
   }
   static getConfigElement() { return document.createElement('nimbus-weather-card-editor'); }
+  getCardSize() { return 3; }
+  getGridOptions() {
+    return { rows: 3, columns: 12, min_rows: 3, min_columns: 6 };
+  }
 
   constructor() {
     super();
@@ -2513,8 +2517,8 @@ _clearDroplets() {
     this._lastBgKey = null;
     this.shadowRoot.innerHTML = `
 <style>
-:host { display:block; font-family:system-ui,-apple-system,sans-serif; width:100%; position:relative; z-index:0; isolation:isolate }
-.wrapper { position:relative; border-radius:24px; width:100% }
+:host { display:block; font-family:system-ui,-apple-system,sans-serif; width:100%; position:relative; z-index:0; isolation:isolate; margin:0 !important; padding:0 !important; }
+.wrapper { position:relative; border-radius:24px; width:100%; margin:0; padding:0; }
 
 /* ── BACKGROUNDS ── */
 .bg { position:absolute; inset:0; border-radius:24px; z-index:0; pointer-events:none; opacity:1; transition:opacity 180s ease; will-change:opacity }
@@ -2870,7 +2874,7 @@ _clearDroplets() {
 .cloud2 svg { animation-duration:18s; animation-delay:-6s }
 .cloud3 svg { animation-duration:26s; animation-delay:-11s }
 .cloud4 svg { animation-duration:20s; animation-delay:-3s }
-.card { position:relative; border-radius:24px; min-height:170px; cursor:pointer; width:100%; overflow:hidden }
+.card { margin:0; position:relative; border-radius:24px; min-height:170px; cursor:pointer; width:100%; overflow:hidden }
 .hd   { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px }
 .loc  { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; opacity:.85 }
 .cnd  { font-size:11px; opacity:.7; text-transform:capitalize }
