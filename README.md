@@ -27,6 +27,30 @@ A beautiful, Apple Weather‑inspired custom card for Home Assistant with multi-
 
 ---
 
+## 🆕 What's new in v2.4.1
+
+v2.4.1 is a small but important visual and reliability hotfix after the v2.4.0 multi-source release.
+
+It tightens condition handling across weather integrations and local condition sensors, fixes fog rendering artifacts, and corrects night backgrounds for edge-case states such as `overcast` and `exceptional`.
+
+### 🔧 Condition rendering fixes
+
+- Weather states are now normalized before rendering, so common variants such as `Partly Cloudy`, `partly-cloudy`, `clear night`, `mist`, `haze`, `drizzle`, `heavy-rain`, `thunderstorm`, `snow`, `sleet`, and `wintry-mix` map to the intended Nimbus visuals.
+- `overcast` now uses the cloudy icon instead of falling back to the exceptional warning icon.
+- `overcast` and `exceptional` now have proper night background handling in both CSS and canvas rendering paths.
+- Moon visibility is reduced for heavy/uncertain conditions such as `overcast`, `exceptional`, and `lightning`, so the moon no longer appears too clear through dense cloud or warning states.
+
+### 🌫️ Fog polish
+
+- Fog rendering no longer uses visible rectangular/horizontal bands.
+- Mist layers now render as softer radial veils with feathered edges for a more natural diffuse fog effect.
+
+### ⚠️ Exceptional state polish
+
+- The `exceptional` warning icon has been refined with a more balanced isosceles triangle and clearer centered mark.
+
+---
+
 ## 🆕 What's new in v2.4.0
 
 What started as another round of visual polish grew into a much deeper update. Nimbus can now handle multiple weather sources, keep local station data separate from forecast integrations, and render the sky with smoother transitions, improved moon phases, softer clouds, and richer atmospheric effects.
@@ -126,6 +150,14 @@ On clear nights, a random star detaches and streaks diagonally across the sky ev
 ---
 
 ## 📋 Changelog
+
+### v2.4.1
+- 🐛 **Condition normalization** — common condition sensor variants now map to the intended Nimbus weather states
+- 🐛 **Overcast icon fallback** — `overcast` now uses the cloudy icon instead of the exceptional warning icon
+- 🐛 **Night background fixes** — `overcast` and `exceptional` no longer fall back to the bright default canvas background at night
+- 🌙 **Condition-aware moon opacity** — the moon is dimmer behind overcast, exceptional, and lightning conditions
+- 🌫️ **Fog rendering polish** — replaced visible horizontal fog bands with softer radial mist veils
+- ⚠️ **Exceptional icon polish** — refined the warning triangle shape for better balance at small sizes
 
 ### v2.4.0
 - ✨ **Multi-source weather tabs** — display multiple weather integrations, multiple locations, or local stations from one card

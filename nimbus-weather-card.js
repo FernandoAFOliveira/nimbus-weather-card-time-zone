@@ -1,4 +1,4 @@
-// Nimbus Weather Card v2.4.0
+// Nimbus Weather Card v2.4.1
 // https://github.com/maxfok/nimbus-weather-card
 // (c) 2024 Gerasimos Fokaefs — MIT License
 
@@ -107,9 +107,9 @@ const MDI = {
     </g>
   </svg>`,
   exceptional: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M19 50L32 10l13 40H19z" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" stroke-linejoin="round"/>
-    <line x1="32" y1="24" x2="32" y2="36" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="32" cy="43" r="1.5" fill="rgba(255,255,255,0.7)"/>
+    <path d="M32 11L52 51H12L32 11z" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.38)" stroke-width="1.35" stroke-linejoin="round"/>
+    <line x1="32" y1="25" x2="32" y2="37" stroke="rgba(255,255,255,0.72)" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="32" cy="44" r="1.7" fill="rgba(255,255,255,0.72)"/>
   </svg>`,
   humidity: `<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M32 8l14 14a20 20 0 1 1-28 0z" fill="rgba(255,255,255,0.28)" stroke="rgba(255,255,255,0.48)" stroke-width="1.4"/>
@@ -267,12 +267,14 @@ function getMoonSVGLarge(phase, fraction) {
 }
 
 function getIcon(condition, isNight, moonPhase, moonFraction) {
+  condition = normalizeCondition(condition) || condition;
   if (condition === 'partlycloudy' && isNight) return MDI['partlycloudy-night'];
   // If condition is 'clear-night' but it's actually daytime → show sun instead of moon
   if (condition === 'clear-night' && !isNight) return MDI['sunny'] || MDI['exceptional'];
   if (condition === 'clear-night' || (condition === 'sunny' && isNight)) {
     return moonPhase ? getMoonSVG(moonPhase, moonFraction) : MDI['clear-night'];
   }
+  if (condition === 'overcast') return MDI['cloudy'] || MDI['exceptional'];
   return MDI[condition] || MDI['exceptional'];
 }
 
@@ -281,6 +283,7 @@ const BG_MAP = {
   'cloudy': 'bg-cloudy', 'overcast': 'bg-overcast', 'fog': 'bg-fog', 'rainy': 'bg-rainy', 'pouring': 'bg-rainy',
   'lightning': 'bg-stormy', 'lightning-rainy': 'bg-stormy', 'snowy': 'bg-snowy',
   'snowy-rainy': 'bg-snowy', 'hail': 'bg-snowy', 'windy': 'bg-windy', 'windy-variant': 'bg-windy',
+  'exceptional': 'bg-exceptional',
 };
 
 const COND_LABELS = {
@@ -288,8 +291,44 @@ const COND_LABELS = {
   'cloudy': 'Cloudy', 'fog': 'Fog', 'rainy': 'Rainy', 'pouring': 'Pouring',
   'lightning': 'Lightning', 'lightning-rainy': 'Thunder & Rain', 'snowy': 'Snowy',
   'snowy-rainy': 'Sleet', 'hail': 'Hail', 'windy': 'Windy', 'windy-variant': 'Windy',
-  'exceptional': 'Exceptional',
+  'exceptional': 'Exceptional', 'overcast': 'Overcast',
 };
+
+function normalizeCondition(condition) {
+  if (condition == null) return '';
+  const raw = String(condition).trim().toLowerCase();
+  if (!raw) return '';
+  const key = raw
+    .replace(/_/g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+  const aliases = {
+    'clear': 'sunny',
+    'clear-day': 'sunny',
+    'mostly-clear': 'sunny',
+    'clear-nighttime': 'clear-night',
+    'night-clear': 'clear-night',
+    'partly-cloudy': 'partlycloudy',
+    'partly-cloudy-night': 'partlycloudy-night',
+    'mostly-cloudy': 'cloudy',
+    'broken-clouds': 'cloudy',
+    'scattered-clouds': 'partlycloudy',
+    'few-clouds': 'partlycloudy',
+    'mist': 'fog',
+    'haze': 'fog',
+    'smoke': 'fog',
+    'drizzle': 'rainy',
+    'light-rain': 'rainy',
+    'heavy-rain': 'pouring',
+    'rain': 'rainy',
+    'thunderstorm': 'lightning-rainy',
+    'storm': 'lightning',
+    'snow': 'snowy',
+    'sleet': 'snowy-rainy',
+    'wintry-mix': 'snowy-rainy',
+  };
+  return aliases[key] || key;
+}
 
 const BOLT_PATHS = [
   'M50,0 L45,35 L55,38 L42,75 L52,78 L38,100',
@@ -1219,6 +1258,7 @@ _moonPhase() {
   }
 
   _condLabel(condition) {
+    condition = normalizeCondition(condition) || condition;
     const lang = this._config?.language || 'en';
     const i = {'en':0,'es':1,'de':2,'nl':3}[lang] || 0;
     const C = [
@@ -1240,17 +1280,18 @@ _moonPhase() {
     if (solar) return solar.elevation < -0.85;
 
     // Fallback only when HA coordinates are unavailable.
-    if (!f?.datetime) return this._isNight(f?.condition);
+    const forecastCondition = normalizeCondition(f?.condition);
+    if (!f?.datetime) return this._isNight(forecastCondition);
     const dt = new Date(f.datetime);
     const h  = dt.getHours();
     if (h >= 20 || h < 6) return true;
-    if (f.condition && f.condition.includes('night')) return true;
+    if (forecastCondition && forecastCondition.includes('night')) return true;
     return false;
   }
 
   _forecastIconArgs(f, forecastType) {
     const isDaily = forecastType === 'daily';
-    const rawCondition = f?.condition || 'sunny';
+    const rawCondition = normalizeCondition(f?.condition || 'sunny') || 'sunny';
     if (isDaily) {
       return {
         condition: rawCondition === 'clear-night' ? 'sunny' : rawCondition,
@@ -1282,6 +1323,7 @@ _moonPhase() {
   }
 
   _isNight(condition) {
+    condition = normalizeCondition(condition) || condition;
     // Αν η condition είναι ρητά νυχτερινή → νύχτα
     if (condition && condition.includes('night')) return true;
 
@@ -1305,6 +1347,7 @@ _moonPhase() {
   }
 
   _auroraWeatherFactor(condition) {
+    condition = normalizeCondition(condition) || condition;
     const factors = {
       'sunny': 1,
       'clear-night': 1,
@@ -1342,6 +1385,7 @@ _moonPhase() {
   }
 
   _bgClass(condition, isNight) {
+    condition = normalizeCondition(condition) || condition;
     // Νυχτερινά backgrounds
     if (isNight) {
       if (condition === 'sunny' || condition === 'clear-night') return 'bg-night';
@@ -1352,6 +1396,7 @@ _moonPhase() {
       if (condition === 'fog') return 'bg-fog-night';
       if (condition === 'cloudy') return 'bg-cloudy-night';
       if (condition === 'overcast') return 'bg-overcast-night';
+      if (condition === 'exceptional') return 'bg-exceptional-night';
       if (['windy', 'windy-variant'].includes(condition)) return 'bg-windy-night';
     }
 
@@ -1360,6 +1405,7 @@ _moonPhase() {
   }
 
   _elevationBg(condition, isNight) {
+    condition = normalizeCondition(condition) || condition;
     // Dynamic sun-elevation sky phases. Twilight is allowed to keep rendering
     // even after _isNight() flips, so sunset can dissolve into night smoothly.
     if (!['sunny','clear-night','partlycloudy','windy','windy-variant'].includes(condition)) return null;
@@ -1715,8 +1761,9 @@ _moonPhase() {
 
     const moonOpacity = {
       'clear-night':0.86,'partlycloudy':0.56,'cloudy':0.30,
+      'overcast':0.18,'exceptional':0.22,
       'windy':0.60,'windy-variant':0.60,'rainy':0.36,'pouring':0.30,
-      'lightning-rainy':0.32,'snowy':0.32,'fog':0.06,
+      'lightning':0.24,'lightning-rainy':0.32,'snowy':0.32,'fog':0.06,
     }[condition] ?? 0.74;
 
     moonDiv.style.width    = `${size}px`;
@@ -2643,34 +2690,37 @@ _clearDroplets() {
   _drawFog(ctx, W, H, t) {
     if (!this._fogLayers) {
       this._fogLayers = Array.from({length: 5}, (_, i) => ({
-        x: -W * 0.3,
-        y: H * (0.02 + i * 0.19),
-        w: W * 1.6,
-        h: H * 0.28,
+        y: H * (0.08 + i * 0.17),
         speed: (i % 2 === 0 ? 1 : -1),
-        opacity: 0.55 + (i * 0.06),
+        opacity: 0.14 + (i * 0.025),
         phase: i * 1.2,
       }));
     }
     ctx.save();
-    for (const l of this._fogLayers) {
-      const ox = Math.sin(t * 0.18 + l.phase) * W * 0.25 * l.speed;
-      const pulse = 0.7 + 0.3 * Math.sin(t * 0.35 + l.phase);
-      const alpha = Math.min(0.9, l.opacity * pulse);
-      // Alternating white/grey for visible contrast
-      const r = l.speed > 0 ? 240 : 180;
-      const g = l.speed > 0 ? 245 : 195;
-      const b = l.speed > 0 ? 255 : 215;
-      const grad = ctx.createLinearGradient(l.x + ox, 0, l.x + ox + l.w, 0);
-      grad.addColorStop(0,    `rgba(${r},${g},${b},0)`);
-      grad.addColorStop(0.15, `rgba(${r},${g},${b},${alpha.toFixed(2)})`);
-      grad.addColorStop(0.5,  `rgba(${r},${g},${b},${Math.min(0.95,alpha+0.1).toFixed(2)})`);
-      grad.addColorStop(0.85, `rgba(${r},${g},${b},${alpha.toFixed(2)})`);
+    ctx.globalCompositeOperation = 'screen';
+    for (const [i, l] of this._fogLayers.entries()) {
+      const driftX = Math.sin(t * 0.11 + l.phase) * W * 0.30 * l.speed;
+      const driftY = Math.sin(t * 0.09 + l.phase * 0.7) * H * 0.035;
+      const cx = W * 0.50 + driftX;
+      const cy = l.y + driftY;
+      const pulse = 0.72 + 0.18 * Math.sin(t * 0.22 + l.phase);
+      const alpha = Math.min(0.22, l.opacity * pulse);
+      // Large radial veils instead of filled rectangles. The transparent
+      // vertical falloff prevents visible horizontal band edges in fog.
+      const r = l.speed > 0 ? 230 : 190;
+      const g = l.speed > 0 ? 238 : 208;
+      const b = l.speed > 0 ? 250 : 226;
+      const radius = W * (0.72 + i * 0.04);
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      grad.addColorStop(0,    `rgba(${r},${g},${b},${alpha.toFixed(3)})`);
+      grad.addColorStop(0.34, `rgba(${r},${g},${b},${(alpha * 0.72).toFixed(3)})`);
+      grad.addColorStop(0.68, `rgba(${r},${g},${b},${(alpha * 0.18).toFixed(3)})`);
       grad.addColorStop(1,    `rgba(${r},${g},${b},0)`);
-      ctx.filter = 'blur(22px)';
+      ctx.filter = 'blur(34px)';
       ctx.fillStyle = grad;
-      ctx.fillRect(l.x + ox, l.y, l.w, l.h);
+      ctx.fillRect(-W * 0.35, 0, W * 1.7, H);
     }
+    ctx.globalCompositeOperation = 'source-over';
     ctx.filter = 'none';
     ctx.restore();
   }
@@ -3071,6 +3121,9 @@ _clearDroplets() {
         'bg-cloudy-night': ['#1a2540','#2e4060'],
         'bg-cloudy':       ['#5c7ea8','#a8c0d8'],
         'bg-overcast':     ['#3a4550','#505a65'],
+        'bg-overcast-night':['#141820','#252a35'],
+        'bg-exceptional':  ['#39424c','#596572'],
+        'bg-exceptional-night':['#151924','#2b3040'],
         'bg-fog':          ['#4a5a6a','#6a7a8a'],
         'bg-fog-night':    ['#1a2030','#3a4560'],
         'bg-rainy':        ['#243445','#435d6f'],
@@ -3163,6 +3216,7 @@ _clearDroplets() {
       'clear-night':     { opacity: 0.0,  count: 0, blur: 3,  speedBase: 90 },
       'partlycloudy':    { opacity: 0.60, count: 6, blur: 3,  speedBase: 85 },
       'cloudy':          { opacity: 0.85, count: 8, blur: 4,  speedBase: 75 },
+      'overcast':        { opacity: 0.92, count: 9, blur: 5,  speedBase: 78 },
       'fog':             { opacity: 0.50, count: 6, blur: 8,  speedBase: 110 },
       'rainy':           { opacity: 0.80, count: 8, blur: 5,  speedBase: 65 },
       'pouring':         { opacity: 0.90, count: 9, blur: 6,  speedBase: 55 },
@@ -3679,8 +3733,10 @@ _clearDroplets() {
 .bg-cloudy-night   { background:linear-gradient(145deg,#1a2540,#2e4060) }
 .bg-cloudy         { background:linear-gradient(145deg,#5c7ea8,#a8c0d8) }
 .bg-overcast       { background:linear-gradient(145deg,#3a4550,#505a65) }
+.bg-exceptional    { background:linear-gradient(145deg,#39424c,#596572) }
 .bg-fog            { background:linear-gradient(145deg,#4a5a6a,#6a7a8a) }
 .bg-overcast-night { background:linear-gradient(145deg,#141820,#252a35) }
+.bg-exceptional-night { background:linear-gradient(145deg,#151924,#2b3040) }
 .bg-fog-night      { background:linear-gradient(145deg,#1a2030,#3a4560) }
 .bg-rainy          { background:linear-gradient(145deg,#243445,#435d6f) }
 .bg-rainy-night    { background:linear-gradient(145deg,#0f1a24,#1e3040) }
@@ -3942,26 +3998,43 @@ _clearDroplets() {
 
 /* ── FOG MIST ── */
 .mist {
-  position:absolute; left:-30%; width:160%; height:55%;
-  filter:blur(14px); will-change:transform,opacity; z-index:2; pointer-events:none;
+  position:absolute; left:-35%; width:170%; height:38%;
+  filter:blur(34px) saturate(.92);
+  opacity:.42;
+  mix-blend-mode:screen;
+  will-change:transform,opacity; z-index:2; pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 18%,rgba(0,0,0,.72) 48%,rgba(0,0,0,.18) 82%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 18%,rgba(0,0,0,.72) 48%,rgba(0,0,0,.18) 82%,transparent 100%);
 }
 .mist1 {
-  top:5%; background:linear-gradient(90deg,transparent 0%,rgba(200,215,235,0.75) 40%,rgba(180,200,225,0.80) 60%,transparent 100%);
-  animation:mD1 7s ease-in-out infinite, mistFade 5s ease-in-out infinite alternate;
+  top:2%;
+  background:
+    radial-gradient(ellipse at 30% 50%,rgba(230,238,248,.32) 0%,rgba(205,222,240,.20) 38%,transparent 72%),
+    radial-gradient(ellipse at 72% 46%,rgba(195,212,232,.22) 0%,rgba(180,202,226,.12) 42%,transparent 74%);
+  animation:mD1 11s ease-in-out infinite, mistFade 8s ease-in-out infinite alternate;
 }
 .mist2 {
-  top:30%; background:linear-gradient(90deg,transparent 0%,rgba(130,155,180,0.85) 35%,rgba(110,140,170,0.90) 65%,transparent 100%);
-  animation:mD2 9s ease-in-out infinite, mistFade 7s ease-in-out infinite alternate;
+  top:30%;
+  background:
+    radial-gradient(ellipse at 42% 52%,rgba(170,194,220,.28) 0%,rgba(145,174,205,.16) 40%,transparent 76%),
+    radial-gradient(ellipse at 82% 48%,rgba(210,224,240,.16) 0%,transparent 68%);
+  animation:mD2 13s ease-in-out infinite, mistFade 10s ease-in-out infinite alternate;
 }
 .mist3 {
-  top:58%; background:linear-gradient(90deg,transparent 0%,rgba(210,225,245,0.70) 45%,rgba(190,210,235,0.75) 55%,transparent 100%);
-  animation:mD3 11s ease-in-out infinite, mistFade 9s ease-in-out infinite alternate;
+  top:57%;
+  background:
+    radial-gradient(ellipse at 28% 50%,rgba(225,236,250,.26) 0%,rgba(198,216,236,.15) 42%,transparent 78%),
+    radial-gradient(ellipse at 68% 48%,rgba(185,205,228,.18) 0%,transparent 70%);
+  animation:mD3 15s ease-in-out infinite, mistFade 11s ease-in-out infinite alternate;
 }
 .mist4 {
-  top:18%; background:linear-gradient(90deg,transparent 0%,rgba(160,180,210,0.65) 50%,transparent 100%);
-  animation:mD4 6s ease-in-out infinite, mistFade 4s ease-in-out infinite alternate;
+  top:18%;
+  background:
+    radial-gradient(ellipse at 48% 50%,rgba(190,210,232,.20) 0%,rgba(165,188,214,.12) 42%,transparent 76%),
+    radial-gradient(ellipse at 78% 48%,rgba(225,235,248,.12) 0%,transparent 70%);
+  animation:mD4 12s ease-in-out infinite, mistFade 9s ease-in-out infinite alternate;
 }
-@keyframes mistFade { 0%{opacity:0.5} 100%{opacity:1.0} }
+@keyframes mistFade { 0%{opacity:.30} 100%{opacity:.48} }
 @keyframes mD1 { 0%{transform:translate3d(-40px,0,0)} 50%{transform:translate3d(40px,10px,0)} 100%{transform:translate3d(-40px,0,0)} }
 @keyframes mD2 { 0%{transform:translate3d(30px,0,0)} 50%{transform:translate3d(-50px,-8px,0)} 100%{transform:translate3d(30px,0,0)} }
 @keyframes mD3 { 0%{transform:translate3d(-20px,0,0)} 50%{transform:translate3d(45px,12px,0)} 100%{transform:translate3d(-20px,0,0)} }
@@ -4515,7 +4588,7 @@ _clearDroplets() {
     const localConditionEntity = sourceOverrides ? this._localSourceField(sourceOverrides, 'local_condition') : '';
     const localConditionState = localConditionEntity ? this._hass?.states?.[localConditionEntity]?.state : null;
     const localCondition = this._isUsableValue(localConditionState) ? localConditionState : null;
-    const cond    = localCondition || stateObj?.state || _localCond;
+    const cond    = normalizeCondition(localCondition || stateObj?.state || _localCond) || _localCond;
     const attrs   = stateObj?.attributes || {};
     const isNight = this._isNight(cond);
     const bgCls   = this._bgClass(cond, isNight);
@@ -5588,7 +5661,7 @@ class NimbusWeatherCardEditor extends HTMLElement {
 
     return `
     <div class="section source-section">
-      <div class="section-title">Weather Sources <span class="section-pill">2.4.0</span></div>
+      <div class="section-title">Weather Sources <span class="section-pill">2.4.1</span></div>
       <div class="source-help">Add multiple weather integrations or keep a local station as a separate tab. If this list is empty, the legacy Weather Entity below is used.</div>
       ${sources.length ? `
       <div class="source-editor-tabs" role="tablist" aria-label="Weather source editor tabs">
