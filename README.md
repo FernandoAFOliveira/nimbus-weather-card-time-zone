@@ -2,18 +2,20 @@
 
 ![Nimbus Weather Card](media/nimbus-weather-card-demo.gif)
 
-A beautiful, Apple Weather‑inspired custom card for Home Assistant with smooth particle effects, dynamic backgrounds, and full moon phase support.
+A beautiful, Apple Weather‑inspired custom card for Home Assistant with multi-source weather tabs, smooth particle effects, dynamic backgrounds, and detailed moon phase support.
 
 🔗 **GitHub**: https://github.com/maxfok/nimbus-weather-card  
-📦 **HACS**: Install as a custom repository while default HACS inclusion is pending
+📦 **HACS**: Available in HACS
 
 ---
 
 ## ✨ Features
 
+- **Multi-source weather tabs** – display multiple weather integrations, locations, or local stations in one card
+- **Redesigned visual editor** – configure sources through editor tabs with a live preview that follows the active source
 - **Stunning visuals** – gradient backgrounds, floating particles (rain, snow, fog, clouds, wind, lightning)
 - **Dynamic day/night** – automatically switches between sun/moon, starry sky, and colour‑shifting gradients
-- **Moon phases** – renders realistic waxing/waning moons with NASA texture and all 8 phases
+- **Moon phases** – renders realistic waxing/waning moons with a continuous terminator model
 - **Shooting stars** – on clear nights, a random star detaches and streaks across the sky, then fades back in
 - **Feels‑like temperature** – shows apparent temperature when available
 - **Smart units** – automatically converts °C/°F reading native entity attributes
@@ -21,7 +23,65 @@ A beautiful, Apple Weather‑inspired custom card for Home Assistant with smooth
 - **Hourly/Daily forecast toggle** – tap the forecast bar to switch view
 - **Custom tap action** – navigate, call-service, url, or more-info
 - **Clock & date panel** – optional, togglable
-- **HACS compatible** – one-click install via custom repository
+- **HACS compatible** – one-click install from HACS
+
+---
+
+## 🆕 What's new in v2.4.0
+
+What started as another round of visual polish grew into a much deeper update. Nimbus can now handle multiple weather sources, keep local station data separate from forecast integrations, and render the sky with smoother transitions, improved moon phases, softer clouds, and richer atmospheric effects.
+
+The result is a more flexible card with better support for mixed weather sources and a more polished visual experience.
+
+### 🌍 Multi-source weather
+
+Nimbus Weather Card can now display multiple weather sources as tabs above the card. You can combine multiple weather integrations, multiple locations from supported integrations, a local weather station as its own source, and supplementary sensors for details missing from a forecast integration.
+
+Each source can define its own name, weather entity, forecast type, display options, and optional sensors for humidity, wind, precipitation, pressure, UV index, feels-like temperature, and weather condition.
+
+Existing single-entity configurations continue to work without changes.
+
+### 🛠️ Editor improvements
+
+The editor now includes a dedicated **Weather Sources** section. Sources are managed through tabs, matching the way they appear on the card. The preview automatically follows the selected source, making multi-source configuration easier to understand.
+
+Per-source options include forecast type, maximum forecast items, 24-hour time format, forecast strip visibility, detail visibility, clock visibility, and wind speed unit.
+
+### 🌡️ Local weather station support
+
+Local weather station data can now coexist with forecast integrations instead of only overriding the primary weather entity.
+
+This is useful when an integration provides the forecast while local sensors provide more accurate conditions for your home, garden, balcony, or other nearby locations.
+
+### 🌙 Moon rendering
+
+Moon rendering now uses a continuous terminator model instead of the previous discrete phase mask and offset approach.
+
+The illuminated edge follows the calculated phase fraction, producing more accurate crescents, quarters, and gibbous phases with smoother transitions. The large moon is rendered using a canvas-based texture and phase composite with cleaner disk masking, softer terminator feathering, and more consistent illumination.
+
+Forecast and modal moon icons now use the same phase calculation as the large moon.
+
+### 🌅 Sky and atmosphere
+
+The sky renderer has been refined across the day/night cycle, with smoother sunrise continuity, sunset transitions, twilight gradients, astronomical night, deep-night blue balance, and sun/moon cross-fade timing.
+
+Aurora rendering now supports both Arctic and Antarctic latitude zones, including Aurora Australis for southern hemisphere configurations using a softer green, teal, and mint colour palette.
+
+Cloud rendering has also been improved, especially on mobile and simplified rendering paths. Procedural clouds now use more natural variation in shape, timing, opacity, movement, and spacing.
+
+### ☀️ Lens flares
+
+Lens flares are now limited to sunny conditions and peak near solar noon. Their intensity has also been reduced so they complement the sun instead of dominating the scene.
+
+### 🔧 Reliability and interaction fixes
+
+- Daily high/low temperature handling no longer derives the daily low from the current or hourly temperature.
+- Temporary invalid daily forecast ranges after Home Assistant restarts or updates are ignored.
+- Unknown or unavailable supplemental sensor states are ignored to prevent invalid `NaN` values from appearing in the card.
+- The active weather source is preserved after dashboard refresh whenever possible.
+- More Info opens the currently active source instead of always opening the first weather entity.
+- The editor preview follows the source currently being edited.
+- Card picker metadata has been updated for improved Home Assistant discovery.
 
 ---
 
@@ -66,6 +126,21 @@ On clear nights, a random star detaches and streaks diagonally across the sky ev
 ---
 
 ## 📋 Changelog
+
+### v2.4.0
+- ✨ **Multi-source weather tabs** — display multiple weather integrations, multiple locations, or local stations from one card
+- ✨ **Redesigned source editor** — configure sources through tabs with a preview that follows the active source
+- ✨ **Per-source options** — forecast type, max items, 24-hour time, forecast strip, details, clock, and wind unit can now vary by source
+- ✨ **Local weather station as a source** — local sensors can coexist with forecast integrations instead of only overriding them
+- 🌙 **Continuous moon terminator** — replaces the older mask/offset approach with smoother and more accurate phase rendering
+- 🌅 **Smoother sky transitions** — improved sunrise, sunset, twilight, astronomical night, and sun/moon cross-fade behaviour
+- 🌌 **Aurora Australis** — Antarctic latitude zones now get a southern aurora treatment alongside Arctic aurora support
+- ☁️ **Improved clouds** — more natural mobile/procedural clouds and adjusted desktop streams
+- ☀️ **Refined lens flares** — visible only in sunny conditions and strongest near solar noon
+- 🌡️ **Daily high/low fixes** — daily lows no longer follow current/hourly temperature, and invalid restart ranges are ignored
+- 🐛 **Unknown sensor guard** — unavailable supplemental sensors no longer produce `NaN` values
+- 🐛 **Interaction fixes** — active source persistence, More Info for the selected source, and editor preview source syncing
+- 🔧 **Card picker metadata** — updated Home Assistant discovery information
 
 ### v2.3.0
 - ✨ **Slow background cross-fade** — sky gradients blend over ~3 minutes between elevation zones
@@ -124,12 +199,11 @@ On clear nights, a random star detaches and streaks diagonally across the sky ev
 
 ## 🔧 Installation
 
-### Via HACS custom repository
+### Via HACS
 1. Open HACS → Frontend
-2. Click the three-dot menu (⋮) → **Custom repositories**
-3. Add URL: `https://github.com/maxfok/nimbus-weather-card`
-4. Category: **Dashboard**
-5. Click **Add**, then find **Nimbus Weather Card** and install
+2. Search for **Nimbus Weather Card**
+3. Click **Download**
+4. Refresh your browser after installation
 
 ### Manual
 1. Download `nimbus-weather-card.js`
