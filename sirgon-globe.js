@@ -5771,10 +5771,19 @@ class SirgonGlobeEditor extends HTMLElement {
     const sensorEntities = typeof this._sensorEntities === 'function' ? this._sensorEntities() : [];
     const sunEntities = typeof this._sunEntities === 'function' ? this._sunEntities() : [];
     
-    // 2. Safe root-level time tracking array filter (checks both card and editor hass bindings)
+    // 2. Globally compatible root-level time tracking array filter
     const hassObj = this.hass || this._hass;
     const timeEntities = (hassObj && hassObj.states)
-      ? Object.keys(hassObj.states).filter(e => e.startsWith('sensor.') || e.startsWith('time.')).sort()
+      ? Object.keys(hassObj.states).filter(e => {
+          // Instantly keep official time platform entities
+          if (e.startsWith('time.')) return true;
+          
+          // Only keep sensors that are explicitly classified as timestamps by Home Assistant
+          if (e.startsWith('sensor.')) {
+            return hassObj.states[e]?.attributes?.device_class === 'timestamp';
+          }
+          return false;
+        }).sort()
       : [];
 
     const sourceEditorEnabled = Array.isArray(c.sources) && c.sources.length > 0;
