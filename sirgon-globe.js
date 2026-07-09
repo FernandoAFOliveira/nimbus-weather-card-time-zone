@@ -5025,13 +5025,13 @@ _clockParts(use24h = this._config?.use_24h !== false) {
     let timeStringOverride = null;
     let fallbackToWeather = true;
 
-    // 1. Primary: Attempt to use the user-defined custom Worldclock Entity
+    // 1. Primary: If a custom Worldclock entity is explicitly configured, use it
     if (this._config?.local_time && this.hass && this.hass.states[this._config.local_time]) {
       const timeEntityState = this.hass.states[this._config.local_time];
       if (timeEntityState && timeEntityState.state && timeEntityState.state !== 'unknown' && timeEntityState.state !== 'unavailable') {
         const stateStr = String(timeEntityState.state);
         
-        // Handle raw digital clock string faces (e.g., "00:41") directly
+        // Handle raw digital clock string faces (e.g., "00:41") directly from Worldclock
         if (/^\d{1,2}:\d{2}$/.test(stateStr)) {
           timeStringOverride = stateStr;
           fallbackToWeather = false;
@@ -5041,7 +5041,7 @@ _clockParts(use24h = this._config?.use_24h !== false) {
           now.setHours(hours);
           now.setMinutes(minutes);
         } else {
-          // Handle standard ISO timestamp formats if someone feeds it an official time entity
+          // Handle standard ISO timestamp formats if fed an official datetime entity
           const parsedDate = new Date(stateStr);
           if (!isNaN(parsedDate.getTime())) {
             now = parsedDate;
@@ -5051,7 +5051,7 @@ _clockParts(use24h = this._config?.use_24h !== false) {
       }
     }
 
-    // 2. Secondary Fallback: If no custom entity was found/configured, use the Weather Timezone logic
+    // 2. Secondary Fallback: If no custom entity is set, run standard Weather Timezone logic
     if (fallbackToWeather) {
       const sources = this._normalizeSources ? this._normalizeSources() : [];
       const preferredId = (this._storedSourceId && sources.length) ? this._storedSourceId(sources) : null;
@@ -5081,7 +5081,7 @@ _clockParts(use24h = this._config?.use_24h !== false) {
     const locMap = {'en': 'en-US', 'es': 'es-ES', 'de': 'de-DE'};
     const loc = locMap[this._config?.language || 'en'] || 'en-US';
     
-    // Format if custom engine generated a timeStringOverride string face
+    // Format the clock interface if the custom engine generated a timeStringOverride
     if (timeStringOverride && timeStringOverride.includes(':')) {
       const [hours, minutes] = timeStringOverride.split(':').map(Number);
       return {
@@ -5092,7 +5092,7 @@ _clockParts(use24h = this._config?.use_24h !== false) {
       };
     }
 
-    // Fallback native formatting
+    // Fallback standard system layout formatting
     const h = now.getHours();
     const m = String(now.getMinutes()).padStart(2, '0');
     return {
@@ -5526,18 +5526,22 @@ class SirgonGlobeEditor extends HTMLElement {
     const sources = hasSources
       ? config.sources.map(source => _sourceWithDisplayDefaults(source, config))
       : config.sources;
+
     if (hasSources && config.active_source) {
       const activeIndex = sources.findIndex((source, index) => _weatherSourceId(source, index) === config.active_source);
       if (activeIndex >= 0) this._activeSourceEditorIndex = activeIndex;
     }
+
+    // Clean structural property extraction
     this._config = {
-      use_local_timezone: config.use_local_timezone !== false,
-      timezone_offset: parseFloat(config.timezone_offset) || 0,
-      local_time: config.local_time || '', // <-- Add this line right here
-      entity: config.entity,
       ...config,
-      sources,
+      entity: config.entity,
+      local_time: config.local_time || '',
+      use_local_timezone: config.local_time ? false : (config.use_local_timezone !== false),
+      timezone_offset: parseFloat(config.timezone_offset) || 0,
+      sources
     };
+
     this._render();
   }
 
@@ -5546,9 +5550,24 @@ class SirgonGlobeEditor extends HTMLElement {
     if (!this._rendered) this._render();
   }
 
-  _fire(config) {
-    this.dispatchEvent(new CustomEvent('config-changed', { detail: { config }, bubbles: true, composed: true }));
+_fire(config) {
+  // Clone config to safely alter properties without mutation side-effects
+  const cleanConfig = { ...config };
+
+  // Automatically handle mutual exclusivity rules dynamically
+  if (cleanConfig.local_time && cleanConfig.local_time !== '') {
+    cleanConfig.use_local_timezone = false;  // Disables fallback browser timezone logic
+  } else {
+    cleanConfig.use_local_timezone = true;   // Restores browser tracking if local_time is cleared
   }
+
+  // Pass the modified, smart configuration back up to Home Assistant
+  this.dispatchEvent(new CustomEvent('config-changed', {
+    detail: { config: cleanConfig },
+    bubbles: true,
+    composed: true
+  }));
+}
 
   _val(key, def) {
     return this._config[key] !== undefined ? this._config[key] : def;
