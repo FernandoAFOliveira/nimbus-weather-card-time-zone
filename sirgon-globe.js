@@ -5771,9 +5771,10 @@ class SirgonGlobeEditor extends HTMLElement {
     const sensorEntities = typeof this._sensorEntities === 'function' ? this._sensorEntities() : [];
     const sunEntities = typeof this._sunEntities === 'function' ? this._sunEntities() : [];
     
-    // 2. Safe root-level time tracking array filter
-    const timeEntities = (this.hass && this.hass.states) 
-      ? Object.keys(this.hass.states).filter(e => e.startsWith('sensor.') || e.startsWith('time.')).sort() 
+    // 2. Safe root-level time tracking array filter (checks both card and editor hass bindings)
+    const hassObj = this.hass || this._hass;
+    const timeEntities = (hassObj && hassObj.states)
+      ? Object.keys(hassObj.states).filter(e => e.startsWith('sensor.') || e.startsWith('time.')).sort()
       : [];
 
     const sourceEditorEnabled = Array.isArray(c.sources) && c.sources.length > 0;
