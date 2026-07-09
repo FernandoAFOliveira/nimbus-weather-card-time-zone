@@ -1,0 +1,41 @@
+# ==========================
+# Operating System
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Editors
+# ==========================
+.vscode/
+.idea/
+
+# ==========================
+# Logs
+# ==========================
+*.log
+.history/
+
+# ==========================
+# Temporary files
+# ==========================
+*.tmp
+*.bak
+*.swp
+
+# ==========================
+# Node (future)
+# ==========================
+node_modules/
+dist/
+build/
+coverage/
+
+# ==========================
+# Home Assistant local files
+# ==========================
+.storage/
+home-assistant_v2.db
+home-assistant_v2.db-*
+home-assistant.log
+secrets.yaml

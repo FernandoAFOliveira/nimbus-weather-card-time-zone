@@ -1,294 +1,311 @@
-# 🌦️ Sirgon Globe
+# 🌍 Sirgon Globe
+### Weather and Time, Anywhere in the World.
 
-![Sirgon Globe](media/Sirgon-globe-demo.gif)
+<p align="center">
+  <img src="media/sirgon-globe-demo.gif" alt="Sirgon Globe Demo" width="900">
+</p>
 
-A beautiful, Apple Weather‑inspired custom card for Home Assistant with multi-source weather tabs, smooth particle effects, dynamic backgrounds, and detailed moon phase support.
+<p align="center">
 
-🔗 **GitHub**: https://github.com/FernandoAFOliveira/Sirgon-globe-time-zone 
-📦 **HACS**: Available in HACS
+**A modern weather and world clock dashboard card for Home Assistant.**
 
----
+Beautiful Apple Weather–inspired visuals combined with true multi-location time awareness.
 
-## ✨ Features
+[![HACS](https://img.shields.io/badge/HACS-Default-blue.svg)](https://hacs.xyz/)
+[![License](https://img.shields.io/github/license/FernandoAFOliveira/sirgon-globe)](LICENSE)
 
-- **Multi-source weather tabs** – display multiple weather integrations, locations, or local stations in one card
-- **Redesigned visual editor** – configure sources through editor tabs with a live preview that follows the active source
-- **Stunning visuals** – gradient backgrounds, floating particles (rain, snow, fog, clouds, wind, lightning)
-- **Dynamic day/night** – automatically switches between sun/moon, starry sky, and colour‑shifting gradients
-- **Moon phases** – renders realistic waxing/waning moons with a continuous terminator model
-- **Shooting stars** – on clear nights, a random star detaches and streaks across the sky, then fades back in
-- **Feels‑like temperature** – shows apparent temperature when available
-- **Smart units** – automatically converts °C/°F reading native entity attributes
-- **Multilingual** – English, Spanish, German, Dutch (and more via PR!)
-- **Hourly/Daily forecast toggle** – tap the forecast bar to switch view
-- **Custom tap action** – navigate, call-service, url, or more-info
-- **Clock & date panel** – optional, togglable
-- **HACS compatible** – one-click install from HACS
+</p>
 
 ---
 
-## 🆕 What's new in v2.4.1
+# Overview
 
-v2.4.1 is a small but important visual and reliability hotfix after the v2.4.0 multi-source release.
+Sirgon Globe is a custom Lovelace card for Home Assistant designed for users who need to monitor weather and local time across multiple locations around the world.
 
-It tightens condition handling across weather integrations and local condition sensors, fixes fog rendering artifacts, and corrects night backgrounds for edge-case states such as `overcast` and `exceptional`.
+Whether your family lives in different countries, you manage remote offices, monitor vacation homes, or simply enjoy following the weather worldwide, every card can display an independent weather source together with its own local clock.
 
-### 🔧 Condition rendering fixes
+Unlike traditional weather cards that rely on the browser's timezone or fixed UTC offsets, Sirgon Globe integrates directly with Home Assistant WorldClock entities, allowing every card to automatically follow local daylight-saving time rules.
 
-- Weather states are now normalized before rendering, so common variants such as `Partly Cloudy`, `partly-cloudy`, `clear night`, `mist`, `haze`, `drizzle`, `heavy-rain`, `thunderstorm`, `snow`, `sleet`, and `wintry-mix` map to the intended Sirgonvisuals.
-- `overcast` now uses the cloudy icon instead of falling back to the exceptional warning icon.
-- `overcast` and `exceptional` now have proper night background handling in both CSS and canvas rendering paths.
-- Moon visibility is reduced for heavy/uncertain conditions such as `overcast`, `exceptional`, and `lightning`, so the moon no longer appears too clear through dense cloud or warning states.
-
-### 🌫️ Fog polish
-
-- Fog rendering no longer uses visible rectangular/horizontal bands.
-- Mist layers now render as softer radial veils with feathered edges for a more natural diffuse fog effect.
-
-### ⚠️ Exceptional state polish
-
-- The `exceptional` warning icon has been refined with a more balanced isosceles triangle and clearer centered mark.
+The result is a dashboard where every location always displays the correct local weather **and** the correct local time.
 
 ---
 
-## 🆕 What's new in v2.4.0
+# Why Sirgon Globe?
 
-What started as another round of visual polish grew into a much deeper update. Sirgoncan now handle multiple weather sources, keep local station data separate from forecast integrations, and render the sky with smoother transitions, improved moon phases, softer clouds, and richer atmospheric effects.
+Many families today are spread across multiple countries.
 
-The result is a more flexible card with better support for mixed weather sources and a more polished visual experience.
+Knowing the weather is only half the story.
 
-### 🌍 Multi-source weather
+You also want to know:
 
-Sirgon Globe can now display multiple weather sources as tabs above the card. You can combine multiple weather integrations, multiple locations from supported integrations, a local weather station as its own source, and supplementary sensors for details missing from a forecast integration.
+- What time is it there?
+- Is daylight saving currently active?
+- Is it morning or late at night?
+- Is this a good time to call?
 
-Each source can define its own name, weather entity, forecast type, display options, and optional sensors for humidity, wind, precipitation, pressure, UV index, feels-like temperature, and weather condition.
+Sirgon Globe was designed around that idea.
 
-Existing single-entity configurations continue to work without changes.
+Each card is completely independent.
 
-### 🛠️ Editor improvements
+Every location can have its own:
 
-The editor now includes a dedicated **Weather Sources** section. Sources are managed through tabs, matching the way they appear on the card. The preview automatically follows the selected source, making multi-source configuration easier to understand.
+- Weather integration
+- Forecast
+- Local weather station
+- WorldClock entity
+- Daylight-saving rules
 
-Per-source options include forecast type, maximum forecast items, 24-hour time format, forecast strip visibility, detail visibility, clock visibility, and wind speed unit.
-
-### 🌡️ Local weather station support
-
-Local weather station data can now coexist with forecast integrations instead of only overriding the primary weather entity.
-
-This is useful when an integration provides the forecast while local sensors provide more accurate conditions for your home, garden, balcony, or other nearby locations.
-
-### 🌙 Moon rendering
-
-Moon rendering now uses a continuous terminator model instead of the previous discrete phase mask and offset approach.
-
-The illuminated edge follows the calculated phase fraction, producing more accurate crescents, quarters, and gibbous phases with smoother transitions. The large moon is rendered using a canvas-based texture and phase composite with cleaner disk masking, softer terminator feathering, and more consistent illumination.
-
-Forecast and modal moon icons now use the same phase calculation as the large moon.
-
-### 🌅 Sky and atmosphere
-
-The sky renderer has been refined across the day/night cycle, with smoother sunrise continuity, sunset transitions, twilight gradients, astronomical night, deep-night blue balance, and sun/moon cross-fade timing.
-
-Aurora rendering now supports both Arctic and Antarctic latitude zones, including Aurora Australis for southern hemisphere configurations using a softer green, teal, and mint colour palette.
-
-Cloud rendering has also been improved, especially on mobile and simplified rendering paths. Procedural clouds now use more natural variation in shape, timing, opacity, movement, and spacing.
-
-### ☀️ Lens flares
-
-Lens flares are now limited to sunny conditions and peak near solar noon. Their intensity has also been reduced so they complement the sun instead of dominating the scene.
-
-### 🔧 Reliability and interaction fixes
-
-- Daily high/low temperature handling no longer derives the daily low from the current or hourly temperature.
-- Temporary invalid daily forecast ranges after Home Assistant restarts or updates are ignored.
-- Unknown or unavailable supplemental sensor states are ignored to prevent invalid `NaN` values from appearing in the card.
-- The active weather source is preserved after dashboard refresh whenever possible.
-- More Info opens the currently active source instead of always opening the first weather entity.
-- The editor preview follows the source currently being edited.
-- Card picker metadata has been updated for improved Home Assistant discovery.
+without depending on the browser's timezone.
 
 ---
 
-## 🆕 What's new in v2.3.0
+# ✨ Features
 
-This release focuses on atmosphere, smoother transitions, and a more polished forecast modal experience.
+## 🌤 Weather
 
-### 🌅 Slow Background Cross-Fade
-Sky gradients now transition with a slow 3-minute cross-fade instead of an abrupt change. Sunrise, golden hour, daytime, and night phases blend naturally as sun elevation changes. The card also schedules a refresh around key sun-elevation thresholds so the sky updates at the right moment.
-
-### 🌌 Aurora Borealis
-Clear nights in the Arctic latitude zone can show a soft aurora overlay with layered green, blue, and purple ribbons. Enabled via `latitude_zone: arctic` in your card config.
-
-```yaml
-type: custom:Sirgon-globe
-entity: weather.home
-latitude_zone: arctic
-```
-
-### ⚡ Lightning Flash Effect
-Thunderstorm conditions now include a sky-flash overlay that briefly illuminates clouds, rain, and droplets. Bolt and flash fading is slower and the secondary flash delay is longer, so strikes feel more natural.
-
-### 📊 Forecast Modal Polish
-- Haptic feedback on open/close
-- Tap backdrop to close
-- Swipe down from handle to close
-- Escape key support on desktop
-- Improved accessibility (`role="dialog"`, `aria-modal`, `aria-hidden`)
-- Larger modal handle
-- Better mobile gesture handling (no background scroll bleed)
-
-### 🌠 Shooting Stars
-On clear nights, a random star detaches and streaks diagonally across the sky every 4–14 seconds, then fades back into place.
-
-### 🔧 Small Improvements
-- Refined night gradient colour
-- Improved layer ordering for backgrounds, aurora, effects, lightning, droplets, and content
-- Moon remains visible when condition is explicitly `clear-night`
-- Internal timer cleanup when card is removed or rebuilt
-- Removed leftover debug logs
+- Apple Weather–inspired interface
+- Beautiful animated backgrounds
+- Dynamic day/night transitions
+- Animated rain, snow, fog, clouds and lightning
+- Realistic moon rendering
+- Hourly and daily forecasts
+- Forecast strip
+- Lens flare effects
+- Aurora Borealis and Aurora Australis
+- Shooting stars during clear nights
 
 ---
 
-## 📋 Changelog
+## 🌍 World Time
 
-### v2.4.1
-- 🐛 **Condition normalization** — common condition sensor variants now map to the intended Sirgonweather states
-- 🐛 **Overcast icon fallback** — `overcast` now uses the cloudy icon instead of the exceptional warning icon
-- 🐛 **Night background fixes** — `overcast` and `exceptional` no longer fall back to the bright default canvas background at night
-- 🌙 **Condition-aware moon opacity** — the moon is dimmer behind overcast, exceptional, and lightning conditions
-- 🌫️ **Fog rendering polish** — replaced visible horizontal fog bands with softer radial mist veils
-- ⚠️ **Exceptional icon polish** — refined the warning triangle shape for better balance at small sizes
+Sirgon Globe introduces native multi-location time support.
 
-### v2.4.0
-- ✨ **Multi-source weather tabs** — display multiple weather integrations, multiple locations, or local stations from one card
-- ✨ **Redesigned source editor** — configure sources through tabs with a preview that follows the active source
-- ✨ **Per-source options** — forecast type, max items, 24-hour time, forecast strip, details, clock, and wind unit can now vary by source
-- ✨ **Local weather station as a source** — local sensors can coexist with forecast integrations instead of only overriding them
-- 🌙 **Continuous moon terminator** — replaces the older mask/offset approach with smoother and more accurate phase rendering
-- 🌅 **Smoother sky transitions** — improved sunrise, sunset, twilight, astronomical night, and sun/moon cross-fade behaviour
-- 🌌 **Aurora Australis** — Antarctic latitude zones now get a southern aurora treatment alongside Arctic aurora support
-- ☁️ **Improved clouds** — more natural mobile/procedural clouds and adjusted desktop streams
-- ☀️ **Refined lens flares** — visible only in sunny conditions and strongest near solar noon
-- 🌡️ **Daily high/low fixes** — daily lows no longer follow current/hourly temperature, and invalid restart ranges are ignored
-- 🐛 **Unknown sensor guard** — unavailable supplemental sensors no longer produce `NaN` values
-- 🐛 **Interaction fixes** — active source persistence, More Info for the selected source, and editor preview source syncing
-- 🔧 **Card picker metadata** — updated Home Assistant discovery information
-
-### v2.3.0
-- ✨ **Slow background cross-fade** — sky gradients blend over ~3 minutes between elevation zones
-- ✨ **Aurora Borealis** — soft aurora overlay for `latitude_zone: arctic` on clear nights
-- ✨ **Lightning flash effect** — sky illumination during thunderstorms, slower/more natural timing
-- ✨ **Forecast modal polish** — haptic feedback, swipe-to-close, backdrop tap, Escape key, accessibility improvements
-- ✨ **Shooting stars** — existing stars detach, streak, and fade back in on clear nights
-- 🐛 Moon remains visible when condition is explicitly `clear-night`
-- 🔧 Internal timer cleanup, improved layer ordering, removed debug logs
-
-### v2.2.0
-#### 🌅 Sky & Sun
-- New multi-phase sky gradient system with smooth colour interpolation
-- 7 elevation zones: deep night → nautical dawn → blue hour → sunrise/sunset → golden hour → morning → daytime → midday
-- Extended sun elevation range to −30°..90°
-
-#### 🌙 Moon
-- Moon auto-detected from `sensor.moon_phase` (no config needed)
-- Moon fixed to top-right corner — no longer goes offscreen on short cards
-- More precise phase calculation using UTC time
-
-#### 📊 Forecast Modal
-- Tap the forecast bar to swap between daily ↔ hourly view
-- `tap_action` support: More Info, Navigate, Open URL, None
-
-#### 📱 Mobile
-- Dedicated mobile cloud rendering for sharper display on touch devices
-- Better cloud detection for rainy, pouring, snowy-rainy conditions
-
-#### 🌡️ Thermometer
-- Redesigned icon matching the style of humidity, wind and pressure icons
-
-#### 🐛 Bug Fixes
-- High/Low always shows daily values even when hourly forecast is selected
-- `clear-night` condition now correctly shows sun icon during daytime (fixes KNMI / NL Weather integration)
-
-### v2.0.1
-- ✨ **Multilingual support** — English, Spanish, German (thanks u/R3x10 & u/super-gando!)
-- ✨ Language selector in card editor
-- 🐛 Fix: HACS update notifications now work correctly (missing `filename` in hacs.json)
-- 🐛 Fix: Forecast icons correctly show day/night per hour (no more moon at 1pm!)
-- 🐛 Fix: Sun entity takes priority over weather state for day/night detection
-
-### v2.0.0 — Complete rewrite 🎉
-- ✨ Animated rain with wind skew (based on `wind_bearing`)
-- ✨ Glass window droplets for rainy conditions
-- ✨ SVG cloud layers with per-condition opacity
-- ✨ Snow animation with 3-layer canvas and sine-wave sway
-- ✨ Lightning with midpoint-displacement branching bolt algorithm
-- ✨ Autumn leaf gusts for windy conditions
-- ✨ Dynamic solar gradient based on `sun.sun` elevation
-- ✨ NASA moon texture with full 8-phase rendering
-- ✨ Moon hemisphere rotation based on latitude
+- Independent clock for every card
+- Native Home Assistant WorldClock integration
+- Automatic daylight-saving handling
+- No manual UTC offsets
+- Multiple locations on the same dashboard
+- Completely browser timezone independent
 
 ---
 
-## 🔧 Installation
+## 🌡 Local Weather Stations
 
-### Via HACS
-1. Open HACS → Frontend
-2. Search for **Sirgon Globe**
-3. Click **Download**
-4. Refresh your browser after installation
+Combine forecast providers with your own sensors.
 
-### Manual
-1. Download `Sirgon-globe.js`
-2. Copy to `/config/www/Sirgon-globe.js`
-3. Add as a custom resource: `Settings → Dashboards → Resources → Add`
-   - URL: `/local/Sirgon-globe.js`
-   - Type: JavaScript module
+Supported supplemental sensors include:
+
+- Temperature
+- Feels Like
+- Humidity
+- Wind Speed
+- Wind Direction
+- Pressure
+- UV Index
+- Precipitation
 
 ---
 
 ## ⚙️ Configuration
 
+- Visual editor
+- Live card preview
+- Multiple weather providers
+- Multiple weather sources
+- Local weather stations
+- Multiple forecast types
+- Hourly / Daily switching
+- Custom tap actions
+- Multilingual support
+
+---
+
+# 📷 Screenshots
+
+## Family Dashboard
+
+![Dashboard](media/sirgon-globe-preview.png)
+
+---
+
+## Visual Configuration Editor
+
+The integrated editor makes configuring multiple locations simple.
+
+- Weather providers
+- WorldClock entities
+- Local weather stations
+- Forecast options
+- Live preview
+
+---
+
+# 🌍 WorldClock Integration
+
+One of Sirgon Globe's defining features is native support for Home Assistant WorldClock entities.
+
+Example:
+
 ```yaml
-type: custom:Sirgon-globe
-entity: weather.forecast_home
-sun_entity: sun.sun          # optional but recommended
-moon_entity: sensor.moon     # optional, for moon phases
-language: en                 # en | es | de | nl
-show_clock: true             # optional clock/date panel
-tap_action:
-  action: navigate
-  navigation_path: /lovelace/weather
+type: custom:sirgon-globe
+entity: weather.forecast_porto
+
+local_time: sensor.europe_lisbon
 ```
 
-### All options
+Unlike traditional weather cards, Sirgon Globe does **not** calculate local time using fixed UTC offsets.
 
-| Option | Default | Description |
-|---|---|---|
-| `entity` | required | Your weather entity |
-| `sun_entity` | `sun.sun` | For accurate day/night detection |
-| `moon_entity` | — | Moon phase sensor |
-| `language` | `en` | `en`, `es`, `de`, `nl` |
-| `show_clock` | `false` | Show clock & date panel |
-| `show_details` | `true` | Show humidity, wind, pressure |
-| `tap_action` | more-info | Standard HA tap action |
-| `ufo_easter_egg` | `false` | 🛸 You'll know when you see it |
-| `latitude_zone` | — | `arctic` for aurora borealis on clear nights |
+Instead, it reads the WorldClock entity directly, allowing Home Assistant to handle daylight-saving transitions automatically.
+
+This makes it possible to display multiple cards simultaneously for locations around the world, each showing its own correct local time.
 
 ---
 
-## 🌍 Add your language
+# 🌦 Supported Weather Providers
 
-Translations are just a few lines of JSON. Open a Pull Request!  
-See existing translations in the source for the format.
+Sirgon Globe works with any Home Assistant weather entity.
+
+Tested with:
+
+- Met.no
+- OpenWeatherMap
+- Pirate Weather
+- National Weather Service
+- Environment Canada
+- Any Home Assistant weather integration
 
 ---
 
-## 🐛 Bugs & Feature Requests
+# 🔧 Installation
 
-Open an issue on [GitHub](https://github.com/maxfok/Sirgon-globe/issues) or comment on the [HA Community thread](https://community.home-assistant.io/t/Sirgon-globe/997259).
+## HACS
+
+1. Open **HACS**
+2. Navigate to **Frontend**
+3. Search for **Sirgon Globe**
+4. Click **Download**
+5. Refresh your browser
 
 ---
 
-## ❤️ Support
+## Manual Installation
 
-If you like Nimbus, consider giving it a ⭐ on GitHub!
+Download
+
+```
+sirgon-globe.js
+```
+
+Copy to
+
+```
+/config/www/
+```
+
+Add as a Dashboard Resource
+
+```
+URL:
+/local/sirgon-globe.js
+
+Type:
+JavaScript Module
+```
+
+---
+
+# ⚙️ Basic Configuration
+
+```yaml
+type: custom:sirgon-globe
+
+entity: weather.forecast_home
+
+local_time: sensor.home_time
+
+show_clock: true
+
+show_details: true
+
+forecast_type: daily
+```
+
+---
+
+# 🚀 Advanced Example
+
+```yaml
+type: custom:sirgon-globe
+
+entity: weather.forecast_porto
+
+local_time: sensor.europe_lisbon
+
+show_clock: true
+
+show_details: true
+
+forecast_type: daily
+
+local_weather_station: true
+
+local_temperature: sensor.porto_temperature
+
+local_humidity: sensor.porto_humidity
+
+local_pressure: sensor.porto_pressure
+```
+
+---
+
+# 🛣 Roadmap
+
+## Completed
+
+- Independent WorldClock support
+- Multiple weather providers
+- Multiple weather sources
+- Local weather stations
+- Visual configuration editor
+- HACS support
+- Animated weather engine
+- Dynamic sky rendering
+
+---
+
+## Planned
+
+- Weather alerts
+- Radar overlays
+- Air quality enhancements
+- Sunrise / Sunset timeline
+- Additional translations
+- Additional weather animations
+
+---
+
+# 🤝 Contributing
+
+Contributions are always welcome.
+
+Bug reports, feature requests, pull requests, translations and documentation improvements are greatly appreciated.
+
+---
+
+# 🙏 Acknowledgements
+
+Sirgon Globe began as a fork of the excellent **Nimbus Weather Card**, originally created by **Max Fok**.
+
+Nimbus provided the visual foundation and weather rendering engine that made this project possible.
+
+Sirgon Globe continues as an independent project focused on multi-location dashboards, WorldClock integration, and globally distributed Home Assistant installations.
+
+Special thanks to the original author for making Nimbus open source.
+
+---
+
+# 📄 License
+
+This project is released under the MIT License.
+
+See the **LICENSE** file for details.

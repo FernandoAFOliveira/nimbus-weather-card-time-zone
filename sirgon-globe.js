@@ -1,4 +1,4 @@
-// Sirgon Globe v1.0.0
+// Sirgon Globe v1.1.0
 // https://github.com/FernandoAFOliveira/sirgon-globe
 // (c) 2024 Gerasimos Fokaefs — MIT License
 
@@ -401,7 +401,7 @@ function _sourceWithDisplayDefaults(source = {}, config = {}) {
 
 class SirgonGlobe extends HTMLElement {
   static get version() {
-    return 'v1.0.0';
+    return 'v1.1.0';
   }
   static getStubConfig(hass) {
     const entity = hass ? Object.keys(hass.states).find(e => e.startsWith('weather.')) || 'weather.home' : 'weather.home';
