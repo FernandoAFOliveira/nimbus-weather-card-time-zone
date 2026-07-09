@@ -1,0 +1,30 @@
+name: "Publish Release"
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Inject Version Tag into Code Files
+        run: |
+          # Grabs the text tag name (like v1.0.1) from your GitHub release event
+          TAG_VERSION="${{ github.event.release.tag_name }}"
+          
+          # Automatically replaces v1.0.0 placeholders inside your files
+          sed -i "s/v1.0.0/${TAG_VERSION}/g" sirgon-globe.js
+          sed -i "s/v1.0.0/${TAG_VERSION}/g" hacs.json
+
+      - name: Update Asset Release Files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            sirgon-globe.js
+            hacs.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

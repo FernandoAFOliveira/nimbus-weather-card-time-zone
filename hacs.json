@@ -1,6 +1,6 @@
 {
-  "name": "Nimbus Weather Card Time Zone",
+  "name": "Sirgon Globe",
   "render_readme": true,
-  "filename": "nimbus-weather-card.js",
+  "filename": "sirgon-globe.js",
   "content_in_root": true
 }
