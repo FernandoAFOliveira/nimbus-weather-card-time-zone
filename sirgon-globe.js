@@ -520,6 +520,7 @@ class SirgonGlobe extends HTMLElement {
       language: config.language || 'en',
       wind_unit: config.wind_unit || 'kmh',
       show_clock: config.show_clock || false,
+      local_time: config.local_time || '',
       local_sensors: config.local_sensors || [],
       local_weather_station: config.local_weather_station || false,
       local_temperature: config.local_temperature || '',
@@ -535,7 +536,7 @@ class SirgonGlobe extends HTMLElement {
       aurora_override: config.aurora_override || false,
       tap_action: config.tap_action || null,
       cloud_mode: config.cloud_mode || 'auto',
-      use_local_timezone: config.use_local_timezone !== false,
+      use_local_timezone: config.local_time ? false : (config.use_local_timezone !== false),
       timezone_offset: parseFloat(config.timezone_offset) || 0,
     };
     // Apply animation state after short delay to allow DOM to settle
@@ -5026,8 +5027,8 @@ _clockParts(use24h = this._config?.use_24h !== false) {
     let fallbackToWeather = true;
 
     // 1. Primary: If a custom Worldclock entity is explicitly configured, use it
-    if (this._config?.local_time && this.hass && this.hass.states[this._config.local_time]) {
-      const timeEntityState = this.hass.states[this._config.local_time];
+      if (this._config?.local_time && this._hass?.states?.[this._config.local_time]) {
+        const timeEntityState = this._hass.states[this._config.local_time];
       if (timeEntityState && timeEntityState.state && timeEntityState.state !== 'unknown' && timeEntityState.state !== 'unavailable') {
         const stateStr = String(timeEntityState.state);
         
@@ -5058,8 +5059,8 @@ _clockParts(use24h = this._config?.use_24h !== false) {
       const activeSource = sources.find(source => source.id === (preferredId || this._activeSourceId || this._config?.active_source)) || sources[0];
       const entity = activeSource ? activeSource.entity : (this._config?.entity || '');
 
-      if (this._config?.use_local_timezone !== false && entity && this.hass && this.hass.states) {
-        const entityState = this.hass.states[entity];
+      if (this._config?.use_local_timezone !== false && entity && this._hass && this._hass.states) {
+        const entityState = this._hass.states[entity];
         if (entityState && entityState.attributes && entityState.attributes.time_zone) {
           try {
             const localTimeString = now.toLocaleString("en-US", { timeZone: entityState.attributes.time_zone });
